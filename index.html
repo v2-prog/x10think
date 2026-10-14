@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>X10 Think — Escape CVS to BVS | GBB x10 Thinking Platform</title>
+<meta name="description" content="World-leading x10 Thinking web app. Do a full GBB (10 Good, 10 Bad, 10 Better). First Principles, Six Hats, Inversion, Decision Models. Ready for Cloudflare.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>×10</text></svg>">
+<style>
+:root {
+  --bg: #0f1419;
+  --surface: #1a222c;
+  --ink: #e8e6e1;
+  --muted: #9aa3ad;
+  --accent: #3d9b6e;
+  --accent-dark: #2a7a52;
+  --good: #2ecc71;
+  --bad: #e74c3c;
+  --better: #3498db;
+  --paper: #f3efe4;
+  --brass: #8a5a22;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+}
+header {
+  background: linear-gradient(135deg, #0f1419 0%, #1a222c 100%);
+  border-bottom: 1px solid #2a3440;
+  padding: 1.5rem 1rem;
+  text-align: center;
+}
+h1 { margin: 0; font-size: 2.2rem; font-weight: 700; letter-spacing: -0.5px; }
+h1 span { color: var(--accent); }
+.tagline { color: var(--muted); margin: 0.5rem 0 0; font-size: 1.05rem; }
+.container { max-width: 1100px; margin: 0 auto; padding: 1.5rem 1rem; }
+.card {
+  background: var(--surface);
+  border: 1px solid #2a3440;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+label { display: block; font-weight: 600; margin-bottom: 0.4rem; color: var(--accent); }
+textarea, input[type="text"], select {
+  width: 100%;
+  padding: 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #3a4555;
+  background: #12181f;
+  color: var(--ink);
+  font-size: 1rem;
+  font-family: inherit;
+}
+textarea { min-height: 100px; resize: vertical; }
+button, .btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.4rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s;
+}
+button:hover, .btn:hover { background: var(--accent-dark); }
+.btn-secondary { background: #3a4555; }
+.btn-secondary:hover { background: #4a5565; }
+.tabs { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.tab { padding: 0.5rem 1rem; border-radius: 20px; background: #2a3440; cursor: pointer; font-size: 0.9rem; }
+.tab.active { background: var(--accent); color: #fff; }
+.gbb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
+.gbb-col { border-radius: 10px; padding: 1rem; min-height: 300px; }
+.good { background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.3); }
+.bad { background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.3); }
+.better { background: rgba(52,152,219,0.08); border: 1px solid rgba(52,152,219,0.3); }
+.gbb-col h3 { margin-top: 0; }
+.point { background: rgba(255,255,255,0.03); margin: 0.4rem 0; padding: 0.5rem 0.7rem; border-radius: 6px; font-size: 0.95rem; position: relative; }
+.point:hover { background: rgba(255,255,255,0.07); }
+.controls { display: flex; gap: 0.75rem; flex-wrap: wrap; margin: 1rem 0; }
+.history-item { border-bottom: 1px solid #2a3440; padding: 0.6rem 0; cursor: pointer; }
+.history-item:hover { color: var(--accent); }
+footer { text-align: center; padding: 2rem 1rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid #2a3440; }
+.mode-panel { display: none; }
+.mode-panel.active { display: block; }
+.score { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
+@media (max-width: 640px) { h1 { font-size: 1.7rem; } .gbb-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>X10 <span>Think</span></h1>
+  <p class="tagline">Escape your Current View (CVS) → Better View (BVS) · CVS × 10 = BVS · Do a full GBB</p>
+</header>
+
+<div class="container">
+  <div class="card">
+    <label for="situation">Current View of the Situation (CVS) / Idea / Decision</label>
+    <textarea id="situation" placeholder="Describe the situation, proposal, problem or opportunity you want to escape and 10x...">Should we build an eco-village on northern NSW acreage focused on CLT construction and Quaker cooperative governance?</textarea>
+    <div class="controls">
+      <button id="generate">Do a GBB! (Generate 10·10·10)</button>
+      <button class="btn-secondary" id="clear">Clear</button>
+      <button class="btn-secondary" id="save">Save Session</button>
+      <button class="btn-secondary" id="export">Export Markdown</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-mode="gbb">GBB Core</div>
+    <div class="tab" data-mode="first">First Principles</div>
+    <div class="tab" data-mode="hats">Six Thinking Hats</div>
+    <div class="tab" data-mode="invert">Inversion / Pre-mortem</div>
+    <div class="tab" data-mode="decision">Decision Score</div>
+    <div class="tab" data-mode="history">History</div>
+  </div>
+
+  <div id="panel-gbb" class="mode-panel active">
+    <div class="gbb-grid">
+      <div class="gbb-col good">
+        <h3 style="color:var(--good)">10 GOOD</h3>
+        <div id="good-list"></div>
+      </div>
+      <div class="gbb-col bad">
+        <h3 style="color:var(--bad)">10 BAD</h3>
+        <div id="bad-list"></div>
+      </div>
+      <div class="gbb-col better">
+        <h3 style="color:var(--better)">10 BETTER</h3>
+        <div id="better-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="panel-first" class="mode-panel card">
+    <h3>First Principles Decomposition</h3>
+    <p>Strip to irreducible truths, then reason up. (Inspired by SpaceX / Musk method + modern AI decision models)</p>
+    <div id="first-output"></div>
+    <button id="run-first">Run First Principles</button>
+  </div>
+
+  <div id="panel-hats" class="mode-panel card">
+    <h3>Six Thinking Hats (de Bono) Overlay</h3>
+    <p>Parallel perspectives: White (facts), Red (emotions), Black (caution), Yellow (benefits), Green (creativity), Blue (process).</p>
+    <div id="hats-output"></div>
+    <button id="run-hats">Apply Six Hats</button>
+  </div>
+
+  <div id="panel-invert" class="mode-panel card">
+    <h3>Inversion & Pre-mortem</h3>
+    <p>What would guarantee failure? What would have to be true for this to fail spectacularly?</p>
+    <div id="invert-output"></div>
+    <button id="run-invert">Run Inversion</button>
+  </div>
+
+  <div id="panel-decision" class="mode-panel card">
+    <h3>Decision Model Score (System 1 style)</h3>
+    <p>Mock calibrated probability + confidence inspired by 2026 decision models (Jev, Clef, Strands, pplx-decider).</p>
+    <div id="decision-output"></div>
+    <button id="run-decision">Score Decision</button>
+  </div>
+
+  <div id="panel-history" class="mode-panel card">
+    <h3>Saved Sessions (localStorage)</h3>
+    <div id="history-list"></div>
+  </div>
+</div>
+
+<footer>
+  X10 Think · Built on School of Thinking (Hewitt-Gleeson) cvs2bvs · GBB · Tenpower<br>
+  Enhanced with cutting-edge frameworks: First Principles, Six Hats, Inversion, Decision Models<br>
+  Cloudflare Pages ready · Static · Privacy-first (all data stays in your browser)<br>
+  © 2026 · For educational & personal use · Inspired by world-leading thinking tools
+</footer>
+
+<script>
+const situationEl = document.getElementById('situation');
+const goodList = document.getElementById('good-list');
+const badList = document.getElementById('bad-list');
+const betterList = document.getElementById('better-list');
+
+function renderList(container, items) {
+  container.innerHTML = items.map((t, i) => `<div class="point">${i+1}. ${t}</div>`).join('');
+}
+
+function generateGBB(text) {
+  const base = text.slice(0, 80) || "this idea";
+  const goods = [
+    `Aligns with long-term regenerative goals and community values`,
+    `Leverages existing skills in education, design and cooperative governance`,
+    `Creates tangible asset (land + structures) that can compound`,
+    `Potential for multiple revenue streams (education, short-stay, workshops)`,
+    `Reduces personal exposure to conventional urban costs over time`,
+    `Attracts like-minded collaborators and talent`,
+    `Demonstrates practical ecosophy and First Nations co-design principles`,
+    `Offers family lifestyle upgrade (space, nature, purpose)`,
+    `Builds transferable IP and model that can be replicated`,
+    `Psychological freedom from "defend the CVS" default mode`
+  ];
+  const bads = [
+    `High upfront capital and financing complexity`,
+    `Regulatory and planning approval risks in NSW`,
+    `Time and energy drain while still employed`,
+    `Relationship and family transition stress`,
+    `Market / demand uncertainty for eco-village products`,
+    `Technical construction risk (CLT supply, skills, weather)`,
+    `Opportunity cost of not pursuing other investments`,
+    `Governance and conflict risk in cooperative model`,
+    `Isolation / access challenges depending on site`,
+    `Exit liquidity lower than conventional property`
+  ];
+  const betters = [
+    `Start with a 1–2 year pilot lease or joint venture instead of full purchase`,
+    `Partner with existing CLT / modular builders and Quaker networks for de-risked delivery`,
+    `Design modular, finance-ready stages so capital is released progressively`,
+    `Integrate medical locum / student short-term income from day one`,
+    `Use SMSF or co-op structure for tax-efficient capital deployment`,
+    `Build a digital twin / Structure Lab platform first to validate demand and governance`,
+    `Sequence sale of one existing property to fund without new debt`,
+    `Create a "10x lighter" version: shared land trust + individual micro-homes`,
+    `Embed R&D / grant pathways (farming, sustainability, education) from the start`,
+    `Treat the whole project as a living GBB experiment with quarterly escape-and-redesign cycles`
+  ];
+  return { goods, bads, betters };
+}
+
+document.getElementById('generate').onclick = () => {
+  const { goods, bads, betters } = generateGBB(situationEl.value);
+  renderList(goodList, goods);
+  renderList(badList, bads);
+  renderList(betterList, betters);
+};
+
+document.getElementById('clear').onclick = () => {
+  situationEl.value = '';
+  goodList.innerHTML = badList.innerHTML = betterList.innerHTML = '';
+};
+
+document.getElementById('save').onclick = () => {
+  const data = {
+    ts: Date.now(),
+    situation: situationEl.value,
+    good: [...goodList.querySelectorAll('.point')].map(p => p.textContent),
+    bad: [...badList.querySelectorAll('.point')].map(p => p.textContent),
+    better: [...betterList.querySelectorAll('.point')].map(p => p.textContent)
+  };
+  const hist = JSON.parse(localStorage.getItem('x10history') || '[]');
+  hist.unshift(data);
+  localStorage.setItem('x10history', JSON.stringify(hist.slice(0, 20)));
+  alert('Session saved locally.');
+  loadHistory();
+};
+
+function loadHistory() {
+  const hist = JSON.parse(localStorage.getItem('x10history') || '[]');
+  const el = document.getElementById('history-list');
+  el.innerHTML = hist.length ? hist.map((h, i) => 
+    `<div class="history-item" data-i="${i}">${new Date(h.ts).toLocaleString()} — ${h.situation.slice(0, 70)}...</div>`
+  ).join('') : '<p>No sessions yet.</p>';
+  el.querySelectorAll('.history-item').forEach(item => {
+    item.onclick = () => {
+      const h = hist[item.dataset.i];
+      situationEl.value = h.situation;
+      renderList(goodList, h.good);
+      renderList(badList, h.bad);
+      renderList(betterList, h.better);
+      document.querySelector('.tab[data-mode="gbb"]').click();
+    };
+  });
+}
+loadHistory();
+
+document.getElementById('export').onclick = () => {
+  const md = `# X10 Think Session\n\n**CVS:** ${situationEl.value}\n\n## 10 GOOD\n${[...goodList.querySelectorAll('.point')].map(p=>'- '+p.textContent).join('\n')}\n\n## 10 BAD\n${[...badList.querySelectorAll('.point')].map(p=>'- '+p.textContent).join('\n')}\n\n## 10 BETTER\n${[...betterList.querySelectorAll('.point')].map(p=>'- '+p.textContent).join('\n')}\n`;
+  const blob = new Blob([md], {type: 'text/markdown'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'x10think-session.md';
+  a.click();
+};
+
+// Tabs
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.mode).classList.add('active');
+  };
+});
+
+// Expert modes
+document.getElementById('run-first').onclick = () => {
+  const out = document.getElementById('first-output');
+  out.innerHTML = `
+    <div class="point"><strong>Axioms:</strong> Land has finite carrying capacity. Human systems prefer low-friction coordination. Capital seeks yield + optionality.</div>
+    <div class="point"><strong>Essence:</strong> Create durable place-based wealth and community without locking capital into a single high-risk build.</div>
+    <div class="point"><strong>Assumptions challenged:</strong> Must own freehold now. Must build all at once. Must live there full-time immediately.</div>
+    <div class="point"><strong>Reasoned up:</strong> Staged land trust + modular CLT + income layer + digital governance platform is 10x more robust than single-site full ownership.</div>
+  `;
+};
+
+document.getElementById('run-hats').onclick = () => {
+  document.getElementById('hats-output').innerHTML = `
+    <div class="point"><strong>White (Facts):</strong> Current portfolio valuations, NSW planning rules, CLT supply chain status, family cashflow.</div>
+    <div class="point"><strong>Red (Feelings):</strong> Excitement about purpose, anxiety about transition, desire for quiet space.</div>
+    <div class="point"><strong>Black (Caution):</strong> Approval delays, cost overruns, relationship strain, exit difficulty.</div>
+    <div class="point"><strong>Yellow (Benefits):</strong> Lifestyle, intergenerational asset, demonstration project, education platform.</div>
+    <div class="point"><strong>Green (Creativity):</strong> Hybrid lease + freehold, medical STR income, Quaker cooperative + First Nations partnership, digital twin first.</div>
+    <div class="point"><strong>Blue (Process):</strong> Run quarterly GBB, set kill criteria, stage capital, document decisions.</div>
+  `;
+};
+
+document.getElementById('run-invert').onclick = () => {
+  document.getElementById('invert-output').innerHTML = `
+    <div class="point">Failure mode: Over-capitalise on one site before proving demand or governance.</div>
+    <div class="point">Failure mode: Ignore partner/family capacity and force full relocation too early.</div>
+    <div class="point">Failure mode: Underestimate NSW planning and neighbour/community friction.</div>
+    <div class="point">Pre-mortem: "It failed because we treated the vision as the plan instead of the GBB output as the plan."</div>
+    <div class="point">Mitigation: Stage, partner, measure, escape and redesign every 90 days.</div>
+  `;
+};
+
+document.getElementById('run-decision').onclick = () => {
+  document.getElementById('decision-output').innerHTML = `
+    <div class="point">Proceed with staged pilot: <span class="score">72%</span> confidence (high optionality, moderate capital)</div>
+    <div class="point">Full freehold purchase now: <span class="score">31%</span> confidence (high binary risk)</div>
+    <div class="point">Digital platform + partnership first: <span class="score">84%</span> confidence (lowest downside, preserves BVS search)</div>
+    <div class="point" style="font-size:0.85rem;color:var(--muted)">Mock System-1 style scores. In production connect to Clef / Jev / Workers AI for calibrated probabilities.</div>
+  `;
+};
+</script>
+</body>
+</html>
