@@ -1,0 +1,8 @@
+{
+  "name": "x10think",
+  "private": false,
+  "version": "1.0.0",
+  "description": "X10 Think — Escape CVS to BVS with GBB and expert thinking frameworks. Cloudflare Pages ready.",
+  "scripts": {},
+  "keywords": ["x10-thinking", "gbb", "cvs2bvs", "decision-making", "cloudflare-pages"]
+}
